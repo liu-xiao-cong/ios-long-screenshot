@@ -1,4 +1,4 @@
-# ios的长截图
+# Cong的长截图
 
 [打开 App](https://liu-xiao-cong.github.io/ios-long-screenshot/)
 

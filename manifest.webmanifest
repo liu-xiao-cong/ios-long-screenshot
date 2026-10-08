@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "ios的长截图",
-  "short_name": "ios的长截图",
+  "name": "Cong的长截图",
+  "short_name": "Cong的长截图",
   "description": "导入截图或滚动录屏，在本机拼接、编辑并保存长图。",
   "lang": "zh-CN",
   "start_url": "./",

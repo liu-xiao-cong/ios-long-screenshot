@@ -1,4 +1,4 @@
-const CACHE = 'ios-long-screenshot-v2-watermark';
+const CACHE = 'ios-long-screenshot-v3-cong';
 const SHELL = ['./','./index.html','./style.css','./app.js','./watermark.js','./matcher.js','./match-worker.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL))); });
 // Activate on the next visit; do not replace code during an editing session.

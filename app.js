@@ -292,7 +292,7 @@ async function prepareExport() {
       for (const mask of state.masks.filter(m => m.page === index)) ctx.fillRect(Math.floor(mask.x*page.width),Math.floor(mask.y*page.height)-sy,Math.ceil(mask.w*page.width)+1,Math.ceil(mask.h*page.height)+1);
       drawWatermark(ctx,page.width,ey-sy,watermark);
       const blob = await blobFrom(c,'image/png'); release(c);
-      const name = `ios的长截图-${exports.length+1}.png`, file = new File([blob],name,{type:'image/png'});
+      const name = `Cong的长截图-${exports.length+1}.png`, file = new File([blob],name,{type:'image/png'});
       exports.push({file,url:URL.createObjectURL(blob),name});
       progress(`已准备 ${exports.length} 张图片`,(index+1)/state.result.length*100); await yieldUI();
     }
@@ -309,7 +309,7 @@ function renderExports() {
   const files = state.exports.map(e => e.file); $('share').hidden = !(navigator.canShare && navigator.canShare({files}));
 }
 async function share() {
-  try { await navigator.share({files:state.exports.map(e=>e.file),title:'ios的长截图'}); }
+  try { await navigator.share({files:state.exports.map(e=>e.file),title:'Cong的长截图'}); }
   catch(error) { if(error.name !== 'AbortError') toast('分享未完成，请使用下方的下载或打开图片。'); }
 }
 async function demo() {
