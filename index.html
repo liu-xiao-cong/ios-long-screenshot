@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fc"><meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="ios的长截图">
+  <meta name="description" content="截图与滚动录屏，本地拼接成一张长图。无需注册，无需上传。">
+  <title>ios的长截图 · 把画面连起来</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" href="./icons/icon-192.png"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./" aria-label="ios的长截图首页"><img src="./icons/icon-192.png" alt="" width="36" height="36"><span>ios的长截图</span></a><button id="install" class="quiet">添加到主屏幕 <span aria-hidden="true">↗</span></button></header>
+  <main>
+    <section id="welcome" class="welcome">
+      <div class="hero-copy"><p class="eyebrow"><span class="live-dot"></span> 不上传，留在你的设备里</p><h1>零散的画面，<br>连成<span class="accent">一张。</span></h1><p class="intro">聊天记录、网页文章、灵感清单。<br>导入截图或滚动录屏，让内容完整留下来。</p><div class="hero-actions"><button id="pick-images" class="primary">＋ 导入截图</button><button id="pick-video" class="secondary">▷ 导入录屏</button></div><button id="demo" class="text-button">先用演示图片体验 <span aria-hidden="true">→</span></button><p class="supported">PNG / JPG / WebP · 浏览器可播放的 MP4 / MOV</p></div>
+      <div class="hero-art" aria-hidden="true"><div class="art-grid"></div><div class="paper paper-back"><div class="mini-heading">把灵感，留长一点。</div><div class="mini-line long"></div><div class="mini-line"></div><div class="picture-block"><div class="sun"></div><div class="hill"></div></div><div class="mini-line long"></div><div class="mini-line medium"></div></div><div class="paper paper-front"><div class="mini-tag">THE LITTLE THINGS</div><div class="mini-heading">生活里值得<br>收藏的片刻</div><div class="mini-line long"></div><div class="mini-line medium"></div><div class="join-line"><span>自动识别重叠内容</span></div><div class="mini-line long"></div><div class="mini-line"></div><div class="note">所有片段，刚好相连。</div></div><div class="art-badge"><span>✓</span> 一张长图，完整保存</div></div>
+    </section>
+    <section class="benefits" id="benefits"><article><span class="feature-icon">▤</span><div><h3>重叠的，自动去掉</h3><p>识别相邻画面，衔接连续内容。</p></div></article><article><span class="feature-icon">◈</span><div><h3>隐私，自己掌握</h3><p>本地处理，导出前涂黑敏感信息。</p></div></article><article><span class="feature-icon">↗</span><div><h3>打开，就能使用</h3><p>添加到主屏幕，下次一点即开。</p></div></article></section>
+
+    <section id="workspace" hidden>
+      <div class="section-head"><div><p class="eyebrow">YOUR CANVAS</p><h1 class="section-title">把内容连起来</h1></div><button id="reset" class="quiet danger">清空本次</button></div>
+      <ol class="steps"><li id="step-import" class="current"><b>1</b>选择内容</li><li id="step-edit"><b>2</b>拼接与编辑</li><li id="step-export"><b>3</b>保存长图</li></ol>
+      <div id="source-panel" class="work-grid">
+        <div class="card sources-card"><div class="card-head"><h2 id="source-title">已选截图</h2><span id="source-count" class="pill"></span></div>
+          <div id="video-panel" hidden><video id="video" controls playsinline muted preload="metadata"></video><div class="time-fields"><label>开始（秒）<input id="video-start" type="number" min="0" value="0" step="0.5"></label><label>结束（秒）<input id="video-end" type="number" min="0" value="30" step="0.5"></label></div><p class="hint">选取同一页面连续向下滚动的一段，最多 60 秒。避开切换 App 和控制中心的画面。</p></div>
+          <div id="source-list" class="source-list"></div><button id="add-images" class="add-button">＋ 继续添加截图</button>
+        </div>
+        <aside class="card settings-card"><p class="eyebrow">MAKE IT SEAMLESS</p><h2>保留需要的部分</h2><p class="hint">去掉每一张画面中的固定导航栏。蓝色框内是保留的内容。</p><label class="slider-label" for="crop-top">顶部排除 <output id="top-label">0%</output></label><input id="crop-top" type="range" min="0" max="30" value="0"><label class="slider-label" for="crop-bottom">底部排除 <output id="bottom-label">0%</output></label><input id="crop-bottom" type="range" min="0" max="30" value="0"><label class="select-label" for="mode">拼接方式</label><select id="mode"><option value="auto">自动去重拼接</option><option value="stack">按顺序直接拼接（保留全部内容）</option></select><p class="hint">自动模式适合有重叠区域的竖向截图。没有重叠时，请选择直接拼接。</p><button id="generate" class="primary wide">生成长图 <span>→</span></button></aside>
+      </div>
+      <section id="editor" hidden>
+        <div class="editor-layout"><div class="preview-area"><div class="preview-head"><span class="eyebrow">LONG STORY, ONE IMAGE</span><span id="dimensions" class="pill"></span></div><div id="notice" class="notice" hidden></div><div id="preview-pages"></div></div>
+        <aside class="card editor-tools"><h2>最后，修饰一下</h2><label class="slider-label" for="trim-top">裁掉长图顶部 <output id="trim-top-label">0%</output></label><input id="trim-top" type="range" min="0" max="35" value="0"><label class="slider-label" for="trim-bottom">裁掉长图底部 <output id="trim-bottom-label">0%</output></label><input id="trim-bottom" type="range" min="0" max="35" value="0"><div class="divider"></div><button id="mask" class="secondary wide" aria-pressed="false">▧ 涂黑隐私区域</button><p class="hint" id="mask-hint">开启后，在预览图上拖动框选。导出的图片会永久覆盖这些区域。</p><button id="undo" class="quiet" disabled>↶ 撤销上一个遮挡</button><div class="divider"></div><button id="prepare-export" class="primary wide">准备导出 <span>↗</span></button><button id="back" class="quiet wide">← 返回调整图片</button><p class="hint">长图会按最多 8,000 像素分段，兼顾清晰度与手机内存。</p></aside></div>
+      </section>
+      <section id="export-panel" class="card export-panel" hidden><div class="success-icon">✓</div><h2>你的长图，准备好了</h2><p id="export-description" class="hint"></p><button id="share" class="primary">分享 / 存储图像</button><div id="downloads" class="downloads"></div><p class="hint">iPhone 可在分享菜单中选择“存储图像”。如果未出现，可打开图片后长按保存。</p><button id="continue-edit" class="quiet">← 继续编辑</button></section>
+    </section>
+    <footer><span>ios的长截图</span><span>本地处理 · 画面不上传 · 无需安装包</span><button id="help" class="text-button">使用说明</button></footer>
+  </main>
+  <input type="file" id="images-input" accept="image/png,image/jpeg,image/webp" multiple hidden><input type="file" id="video-input" accept="video/*,.mov,.mp4" hidden>
+  <div id="busy" class="busy-overlay" hidden role="status" aria-live="polite"><div class="busy-card"><div class="spinner"></div><h2 id="busy-title">正在处理</h2><p id="busy-detail" class="hint">内容只在本机处理</p><progress id="progress" max="100" value="0"></progress><button id="cancel" class="quiet">取消</button></div></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="help-dialog"><button class="dialog-close quiet" id="close-help" aria-label="关闭说明">×</button><p class="eyebrow">A LITTLE GUIDE</p><h2>像 App 一样，随时打开。</h2><ol class="guide"><li>在 iPhone 的 <strong>Safari</strong> 中打开本站。</li><li>点击分享按钮，选择<strong>“添加到主屏幕”</strong>。如有“作为网页 App 打开”，将其开启。</li><li>从桌面打开，导入有重叠内容的截图，或选取一段缓慢向下滚动的录屏。</li><li>生成后裁剪、涂黑隐私内容，再分享或保存。</li></ol><div class="notice">网页版不会捕获其他 App 的屏幕，需要先在手机上截图或录屏，再导入。请在离开前导出结果，刷新页面会清空本次编辑。</div><p class="hint" id="offline-status">通过 HTTPS 部署后支持主屏幕安装与离线缓存。</p></dialog>
+  <noscript><p class="notice">请启用 JavaScript 以在设备本地处理图片。</p></noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
