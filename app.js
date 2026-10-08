@@ -352,7 +352,8 @@ $('install').onclick = $('help').onclick = () => $('help-dialog').showModal(); $
 $('help-dialog').onclick = e => {if(e.target===$('help-dialog')) {const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}};
 window.addEventListener('beforeunload',e=>{if(state.sources.length||state.videoURL){e.preventDefault();e.returnValue='';}});
 if ('serviceWorker' in navigator && window.isSecureContext) {
-  navigator.serviceWorker.register('./sw.js').then(async registration => {
+  navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}).then(async registration => {
+    registration.update().catch(() => {});
     await navigator.serviceWorker.ready;
     $('offline-status').textContent='离线缓存已准备好。首次从主屏幕打开时请保持联网，之后可离线使用。';
     state.installed=true;
