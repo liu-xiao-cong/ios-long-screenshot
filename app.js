@@ -1,3 +1,4 @@
+import { drawWatermark } from './watermark.js';
 const $ = id => document.getElementById(id);
 const state = { sources: [], videoURL: null, worker: null, aborted: false, busy: false, result: [], masks: [], exports: [], width: 0, height: 0, masking: false, warning: '', installed: false };
 const MAX_SOURCES = 30, MAX_FRAMES = 120, MAX_HEIGHT = 40000, PAGE_HEIGHT = 8000;
@@ -226,7 +227,8 @@ function renderPreview() {
     const overlay = canvas(450, Math.round(page.height * 450 / page.width)); overlay.className = 'mask-layer'; overlay.setAttribute('aria-label','在此拖动以涂黑隐私区域');
     const shadeTop = document.createElement('div'); shadeTop.className = 'trim-shade top';
     const shadeBottom = document.createElement('div'); shadeBottom.className = 'trim-shade bottom';
-    wrap.append(img,overlay,shadeTop,shadeBottom); $('preview-pages').append(wrap); attachMask(overlay,index);
+    const watermark = canvas(450, Math.round(page.height * 450 / page.width)); watermark.className = 'watermark-layer'; watermark.setAttribute('aria-hidden','true');
+    wrap.append(img,overlay,watermark,shadeTop,shadeBottom); $('preview-pages').append(wrap); attachMask(overlay,index);
   }
   updateTrim(); updateMaskUI();
 }
@@ -237,6 +239,28 @@ function updateTrim() {
     const page = state.result[index];
     el.querySelector('.top').style.height = `${Math.min(1, Math.max(0, (start - page.offset) / page.height)) * 100}%`;
     el.querySelector('.bottom').style.height = `${Math.min(1, Math.max(0, (page.offset + page.height - end) / page.height)) * 100}%`;
+  });
+  updateWatermark();
+}
+function watermarkOptions() {
+  return {enabled:$('watermark-enabled').checked, text:$('watermark-text').value,
+    position:$('watermark-position').value, size:+$('watermark-size').value,
+    opacity:+$('watermark-opacity').value / 100, color:$('watermark-color').value};
+}
+function updateWatermark() {
+  const options = watermarkOptions();
+  $('watermark-options').hidden = !options.enabled;
+  $('watermark-size-label').textContent = options.size;
+  $('watermark-opacity-label').textContent = `${Math.round(options.opacity * 100)}%`;
+  const {start,end} = trimBounds();
+  document.querySelectorAll('.watermark-layer').forEach((c,index) => {
+    const page = state.result[index], ctx = c.getContext('2d');
+    ctx.clearRect(0,0,c.width,c.height);
+    const sy = Math.max(0,start-page.offset), ey = Math.min(page.height,end-page.offset);
+    if (ey <= sy) return;
+    ctx.save(); ctx.scale(c.width/page.width,c.height/page.height);
+    ctx.beginPath(); ctx.rect(0,sy,page.width,ey-sy); ctx.clip(); ctx.translate(0,sy);
+    drawWatermark(ctx,page.width,ey-sy,options); ctx.restore();
   });
 }
 function updateMaskUI() {
@@ -260,12 +284,13 @@ function attachMask(c, page) {
 async function prepareExport() {
   begin('正在准备可保存的图片'); const exports = [];
   try {
-    const {start,end:finish} = trimBounds();
+    const {start,end:finish} = trimBounds(), watermark = watermarkOptions();
     for (const [index,page] of state.result.entries()) {
       checkCancel(); const sy = Math.max(0,start-page.offset), ey = Math.min(page.height,finish-page.offset); if (ey <= sy) continue;
       const c = canvas(page.width,ey-sy), ctx = c.getContext('2d'), image = await imageFrom(page.blob);
       ctx.drawImage(image,0,sy,page.width,ey-sy,0,0,page.width,ey-sy); image.src = ''; ctx.fillStyle = '#000';
       for (const mask of state.masks.filter(m => m.page === index)) ctx.fillRect(Math.floor(mask.x*page.width),Math.floor(mask.y*page.height)-sy,Math.ceil(mask.w*page.width)+1,Math.ceil(mask.h*page.height)+1);
+      drawWatermark(ctx,page.width,ey-sy,watermark);
       const blob = await blobFrom(c,'image/png'); release(c);
       const name = `ios的长截图-${exports.length+1}.png`, file = new File([blob],name,{type:'image/png'});
       exports.push({file,url:URL.createObjectURL(blob),name});
@@ -276,7 +301,7 @@ async function prepareExport() {
 }
 function renderExports() {
   $('downloads').replaceChildren();
-  $('export-description').textContent = `共 ${state.exports.length} 张 PNG 图片 · 遮挡和裁剪已应用 · 未上传任何内容`;
+  $('export-description').textContent = `共 ${state.exports.length} 张 PNG 图片 · 裁剪和遮挡已应用${watermarkOptions().enabled && watermarkOptions().text.trim() ? ' · 已添加水印' : ''} · 本地生成`;
   for (const item of state.exports) {
     const line = document.createElement('div'); const download = document.createElement('a'); download.href = item.url; download.download = item.name; download.textContent = `下载第 ${state.exports.indexOf(item)+1} 张`;
     const open = document.createElement('a'); open.href = item.url; open.target = '_blank'; open.rel = 'noopener'; open.textContent = '打开图片'; open.style.marginLeft = '20px'; line.append(download,open); $('downloads').append(line);
@@ -317,6 +342,7 @@ $('crop-top').oninput = $('crop-bottom').oninput = updateSourceCrop;
 $('trim-top').oninput = $('trim-bottom').oninput = updateTrim;
 $('mask').onclick = () => {state.masking=!state.masking;updateMaskUI();};
 $('undo').onclick = () => {state.masks.pop();updateMaskUI();};
+for (const id of ['watermark-enabled','watermark-text','watermark-position','watermark-size','watermark-opacity','watermark-color']) $(id).addEventListener('input',updateWatermark);
 $('prepare-export').onclick = prepareExport; $('share').onclick = share;
 $('back').onclick = () => {switchStep(1);window.scrollTo({top:0,behavior:'smooth'});};
 $('continue-edit').onclick = () => switchStep(2);

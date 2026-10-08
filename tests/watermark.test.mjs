@@ -1,0 +1,12 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {watermarkLayout,drawWatermark} from '../watermark.js';
+const options={enabled:true,text:'测试水印',position:'bottom-right',size:28,opacity:.35,color:'#334155'};
+const measure=(s,size)=>Array.from(s).length*size;
+test('disabled or empty watermarks draw nothing',()=>{for(const o of [{...options,enabled:false},{...options,text:'  \n ' }])assert.equal(watermarkLayout(900,1000,o,measure),null);});
+test('corner watermark stays within cropped short image',()=>{for(const height of [1,10,100,8000]){const l=watermarkLayout(900,height,options,measure);assert.ok(l.points[0].y>=0&&l.points[0].y<=height);assert.ok(l.size<=height*.55);}});
+test('long Unicode text is capped and fitted inside image',()=>{const l=watermarkLayout(300,1000,{...options,text:'📷'.repeat(60)},measure);assert.equal(Array.from(l.text).length,40);assert.ok(measure(l.text,l.size)<=300*.93+.001);});
+test('preview scaling has the same placement as export',()=>{const a=watermarkLayout(900,3000,options,measure),b=watermarkLayout(450,1500,options,measure);assert.equal(a.size/2,b.size);assert.equal(a.points[0].x/2,b.points[0].x);assert.equal(a.points[0].y/2,b.points[0].y);});
+test('top/center/bottom positions follow the exported crop height',()=>{const top=watermarkLayout(900,1000,{...options,position:'top-left'},measure),center=watermarkLayout(900,1000,{...options,position:'center'},measure),bottom=watermarkLayout(900,1000,options,measure);assert.ok(top.points[0].y<center.points[0].y);assert.equal(center.points[0].y,500);assert.ok(bottom.points[0].y>500);});
+test('tiled watermark repeats down long pages',()=>{const l=watermarkLayout(900,8000,{...options,position:'tile'},measure);assert.ok(l.points.length>30);assert.ok(l.points.every(p=>p.y>=0&&p.y<8000));});
+test('rendering restores canvas state and paints text',()=>{let depth=0;const calls=[];const ctx={save(){depth++;},restore(){depth--;},measureText(t){return {width:t.length*20};},translate(){},rotate(){},fillText(t){calls.push(t);}};drawWatermark(ctx,900,1200,options);assert.equal(depth,0);assert.deepEqual(calls,['测试水印']);});
